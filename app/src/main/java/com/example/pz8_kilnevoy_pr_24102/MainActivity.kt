@@ -3,6 +3,7 @@ package com.example.pz8_kilnevoy_pr_24102
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,12 +21,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Pz8_Kilnevoy_PR24102Theme {
+            val systemDark = isSystemInDarkTheme()
+            var isDarkTheme by remember { mutableStateOf(systemDark) }
+
+            Pz8_Kilnevoy_PR24102Theme(darkTheme = isDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ClockAndDateScreen()
+                    ClockAndDateScreen(
+                        isDarkTheme = isDarkTheme,
+                        onToggleTheme = { isDarkTheme = it }
+                    )
                 }
             }
         }
@@ -44,7 +51,10 @@ fun getCurrentDate(): String {
 }
 
 @Composable
-fun ClockAndDateScreen() {
+fun ClockAndDateScreen(
+    isDarkTheme: Boolean,
+    onToggleTheme: (Boolean) -> Unit
+) {
     var currentTime by remember { mutableStateOf(getCurrentTime()) }
     var currentDate by remember { mutableStateOf(getCurrentDate()) }
 
@@ -69,6 +79,31 @@ fun ClockAndDateScreen() {
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.primary
         )
+
+        // Переключатель светлой и тёмной темы
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = if (isDarkTheme) "Тёмная тема" else "Светлая тема",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Switch(
+                    checked = isDarkTheme,
+                    onCheckedChange = onToggleTheme
+                )
+            }
+        }
 
         // Элемент 1: часы в реальном времени (ЧЧ:ММ:СС)
         ClockElement(time = currentTime)
@@ -136,12 +171,22 @@ fun DateElement(date: String) {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Светлая тема")
 @Composable
-fun ClockAndDatePreview() {
-    Pz8_Kilnevoy_PR24102Theme {
+fun LightThemePreview() {
+    Pz8_Kilnevoy_PR24102Theme(darkTheme = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
-            ClockAndDateScreen()
+            ClockAndDateScreen(isDarkTheme = false, onToggleTheme = {})
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Тёмная тема")
+@Composable
+fun DarkThemePreview() {
+    Pz8_Kilnevoy_PR24102Theme(darkTheme = true) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            ClockAndDateScreen(isDarkTheme = true, onToggleTheme = {})
         }
     }
 }
